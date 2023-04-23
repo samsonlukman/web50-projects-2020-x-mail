@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
   document.querySelector("#compose-form").addEventListener('submit', send_email);
-  document.querySelector('#submit').addEventListener('click', submit_email);
+
 
   // By default, load the inbox
   load_mailbox('inbox');
@@ -14,31 +14,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // send email and set interval before the default function runs
 function send_email(event) {
-  event.preventDefault(); 
-    let recipient = document.querySelector('#compose-recipients').value;
-    let subject = document.querySelector('#compose-subject').value;
-    let body = document.querySelector('#compose-body').value;
+  event.preventDefault();
+  let recipient = document.querySelector('#compose-recipients').value;
+  let subject = document.querySelector('#compose-subject').value;
+  let body = document.querySelector('#compose-body').value;
 
-    fetch('/emails', {
-      method: 'POST',
-      body: JSON.stringify({
-          recipients: recipient,
-          subject: subject,
-          body: body
-      })
+  fetch('/emails', {
+    method: 'POST',
+    body: JSON.stringify({
+      recipients: recipient,
+      subject: subject,
+      body: body
     })
-    .then(response => response.json())
-    .then(result => {
-        console.log(result)
-    });
-  }
-  // set interval for compose form
- function submit_email() {
-  setTimeout(function() {
-    load_mailbox('sent');
-  }, 1000);
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("Email not found");
+    }
+    return response.json();
+  })
+  .then(result => {
+    alert(result.message);
+    load_mailbox('sent')
+  })
+  .catch(error => {
+    alert(error.message);
+  });
+}
+
   
- }
 
 
 function compose_email() {

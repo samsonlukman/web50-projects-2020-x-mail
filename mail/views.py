@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import HttpResponse, HttpResponseRedirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-
+import re
 from .models import User, Email
 
 
@@ -24,6 +24,7 @@ def index(request):
 @csrf_exempt
 @login_required
 def compose(request):
+    
 
     # Composing a new email must be via POST
     if request.method != "POST":
@@ -155,10 +156,15 @@ def logout_view(request):
 def register(request):
     if request.method == "POST":
         email = request.POST["email"]
+        email_pattern = r"\b[A-Za-z0-9._%+-]+@imail\.com\b"
 
         # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
+        if not re.match(email_pattern, email):
+            return render(request, "mail/register.html", {
+                "message": "Email must end with .imail.com"
+            })
         if password != confirmation:
             return render(request, "mail/register.html", {
                 "message": "Passwords must match."
